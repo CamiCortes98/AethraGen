@@ -70,7 +70,7 @@
     </div>
 
     <div id="screen" class="screen" aria-live="polite" aria-atomic="false">
-      <div class="line bot">¡Hola! Soy tu bot. Escribí abajo y presioná Enter <span class="muted">(o apretá Enviar)</span>.<span class="caret"></span></div>
+      <div class="line bot">¡Hola! Soy tu bot. Escribí abajo y presioná Enter <span class="muted">(o apretá Enviar)</span>.</div>
     </div>
 
     <form id="chat-form" class="footer" autocomplete="off">
@@ -79,12 +79,10 @@
     </form>
     <div class="hint">
       Consejo: podés usar <span class="kbd">Enter</span> para enviar y <span class="kbd">Shift + Enter</span> para saltos de línea.
-      <span class="muted">| Backend opcional: <code>/api/chat</code> (Express + OpenAI).</span>
     </div>
   </div>
 
   <script>
-    // Cambiá a false si montás el backend en /api/chat
     const DEMO_MODE = false;
 
     const screenEl = document.getElementById('screen');

@@ -1,8 +1,8 @@
 {
-  "name": "chatbot-web-simple",
+  "name": "aethra-bot",
   "version": "1.0.0",
   "type": "module",
-  "description": "Web minimal que simula una caja de texto y usa OpenAI vía Express.",
+  "description": "Web",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

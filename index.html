@@ -94,10 +94,10 @@
     const levelSel = document.getElementById('level');
     const subjectSel = document.getElementById('subject');
 
-    // Historial de turnos (solo user/assistant). El prompt de sistema lo agrega el backend.
+    
     const history = [];
 
-    // Enter = enviar; Shift+Enter = nueva línea
+    
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
     });

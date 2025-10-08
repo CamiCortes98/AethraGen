@@ -1,5 +1,4 @@
-// server.js — Backend solo Ollama (GRATIS, local)
-// Aethra Bot · asistente educativo (primaria, secundaria y universidad)
+
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
@@ -17,8 +16,6 @@ app.use('/', express.static(__dirname));
 
 const PORT = process.env.PORT || 8787;
 const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
-// Por defecto uso "gemma3:4b" porque ya lo tenés instalado.
-// Podés cambiarlo por "llama3.2" o el que prefieras.
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma3:4b';
 
 // Prompt base educativo para todos los niveles
@@ -29,7 +26,7 @@ const SYSTEM_PROMPT =
     'Explicá paso a paso, usando ejemplos simples y lenguaje claro.',
     'Evitá “dar la respuesta” sin explicación: fomentá el razonamiento.',
     'Si hay cálculos, mostrálos; si hay conceptos, definí brevemente y profundizá si te lo piden.',
-    'Respondé en español rioplatense.'
+    'Respondé en español argentino.'
   ].join(' ');
 
 // Salud: confirma conexión con Ollama y si está el modelo

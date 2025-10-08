@@ -3,101 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ChatBot simple · GPT</title>
+  <title>Aethra Bot · Estudiantil (Ollama)</title>
   <style>
     :root { --bg:#0b0f14; --panel:#0f1720; --accent:#78f087; --muted:#7c8795; --stroke:#1f2b36; }
     * { box-sizing:border-box; }
     body {
       margin:0; background: radial-gradient(1200px 600px at 50% -10%, #1a2734 0%, #0b0f14 40%, #070a0d 100%);
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
       color:#e6edf3; min-height:100svh; display:grid; place-items:center; padding:24px;
     }
-    .app {
-      width:min(880px, 96vw); background:var(--panel); border:1px solid var(--stroke);
-      border-radius:20px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,.35);
-    }
-    .header {
-      padding:16px 18px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--stroke);
-      background:linear-gradient(180deg, rgba(120,240,135,.05), transparent);
-    }
+    .app { width:min(920px, 96vw); background:var(--panel); border:1px solid var(--stroke); border-radius:20px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,.35); }
+    .header { padding:16px 18px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--stroke); background:linear-gradient(180deg, rgba(120,240,135,.05), transparent); }
     .dot { width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow: 0 0 12px var(--accent); }
-    .title { font-weight:700; letter-spacing:.2px; }
+    .title { font-weight:800; letter-spacing:.2px; }
     .subtitle { color:var(--muted); font-size:.9rem }
+    .chip { font-size:12px; color:#0c1a12; background:rgba(120,240,135,.9); border-radius:999px; padding:4px 8px; font-weight:700; margin-left:auto; }
+    .toolbar { display:flex; gap:10px; padding:10px 14px; border-bottom:1px solid var(--stroke); background:#0c131a; align-items:center; }
+    select, .subject {
+      background:#0a1117; border:1px solid #13202b; color:#e6edf3; border-radius:10px; padding:8px 10px; outline:none; font-size:14px;
+    }
     .screen {
       height:56vh; max-height:560px; min-height:360px; background:#0a1117; border-top:1px solid #0d1520;
-      border-bottom:1px solid #0d1520; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      border-bottom:1px solid #0d1520; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace;
       padding:18px; overflow:auto; line-height:1.5; position:relative;
       box-shadow: inset 0 0 0 1px #0c1a25, inset 0 8px 40px rgba(34,195,94,.06);
     }
     .line { white-space:pre-wrap; margin:0 0 8px 0; }
-    .line.user::before { content: "Tú ▸ "; color:#9fb3c8; }
-    .line.bot::before { content: "Bot ▸ "; color:var(--accent); text-shadow:0 0 8px rgba(120,240,135,.7); }
+    .line.user::before { content: "Alumno ▸ "; color:#9fb3c8; }
+    .line.bot::before { content: "Aethra Bot ▸ "; color:var(--accent); text-shadow:0 0 8px rgba(120,240,135,.7); }
     .caret { display:inline-block; width:10px; height:1.2em; background:var(--accent); margin-left:4px; transform: translateY(3px); animation:blink 1s steps(1) infinite; }
     @keyframes blink { 50% { opacity:0; } }
-    .footer {
-      display:flex; gap:10px; padding:14px; background:#0c131a; border-top:1px solid var(--stroke);
-    }
-    .input {
-      flex:1; background:#0a1117; border:1px solid #13202b; color:#e6edf3; border-radius:14px; padding:14px 16px;
-      outline:none; font-size:15px; box-shadow: 0 0 0 2px transparent;
-    }
+    .footer { display:flex; gap:10px; padding:14px; background:#0c131a; border-top:1px solid var(--stroke); }
+    .input { flex:1; background:#0a1117; border:1px solid #13202b; color:#e6edf3; border-radius:14px; padding:14px 16px; outline:none; font-size:15px; }
     .input::placeholder { color:#6b7a88; }
-    .btn {
-      background:linear-gradient(180deg, #78f087, #44cc6a); color:#07110b; border:0; border-radius:14px; padding:0 18px;
-      font-weight:700; letter-spacing:.2px; cursor:pointer; transition: transform .06s ease, box-shadow .2s ease;
-      box-shadow:0 6px 16px rgba(68,204,106,.3);
-    }
-    .btn:active { transform: translateY(1px); }
+    .btn { background:linear-gradient(180deg, #78f087, #44cc6a); color:#07110b; border:0; border-radius:14px; padding:0 18px; font-weight:700; letter-spacing:.2px; cursor:pointer; box-shadow:0 6px 16px rgba(68,204,106,.3); }
     .hint { padding:0 18px 14px 18px; color:#97a6b5; font-size:12.5px }
-    .muted { color:#7c8795 }
-    .kbd { display:inline-block; border:1px solid #2a3947; border-bottom-width:2px; border-radius:6px; padding:1px 6px; font-family:inherit; background:#0b141c; }
     .error { color:#ffb4b4 }
-    .top-actions { margin-left:auto; display:flex; gap:10px; }
-    .chip { font-size:12px; color:#0c1a12; background:rgba(120,240,135,.9); border-radius:999px; padding:4px 8px; font-weight:700 }
   </style>
 </head>
 <body>
-  <div class="app" role="application" aria-label="ChatBot simple">
+  <div class="app" role="application" aria-label="Aethra Bot">
     <div class="header">
       <div class="dot" aria-hidden="true"></div>
       <div>
-        <div class="title">AethraBot</div>
-        <div class="subtitle">Tu acompañante de estudio personalizado</div>
+        <div class="title">Aethra Bot</div>
+        <div class="subtitle">Asistente educativo para primaria, secundaria y universidad</div>
       </div>
-      <div class="top-actions">
-        <span class="chip" title="Modo demostración: responde localmente sin API">DEMO</span>
-      </div>
+      <div class="chip" title="Backend: Ollama local">OLLAMA</div>
+    </div>
+
+    <div class="toolbar" aria-label="Controles">
+      <label for="level" class="subtitle">Nivel:</label>
+      <select id="level" aria-label="Nivel del estudiante">
+        <option>Primaria</option>
+        <option selected>Secundaria</option>
+        <option>Universidad</option>
+      </select>
+
+      <label for="subject" class="subtitle">Materia:</label>
+      <select id="subject" aria-label="Materia">
+        <option selected>General</option>
+        <option>Matemática</option>
+        <option>Química</option>
+        <option>Biología</option>
+        <option>Historia</option>
+        <option>Lengua</option>
+        <option>Programación</option>
+      </select>
     </div>
 
     <div id="screen" class="screen" aria-live="polite" aria-atomic="false">
-      <div class="line bot">¡Hola! Soy tu bot. Escribí abajo y presioná Enter <span class="muted">(o apretá Enviar)</span>.</div>
+      <div class="line bot">¡Hola! Soy <b>Aethra Bot</b>. Elegí tu nivel y materia, escribí tu duda y te explico paso a paso.<span class="caret"></span></div>
     </div>
 
     <form id="chat-form" class="footer" autocomplete="off">
-      <input id="prompt" class="input" name="prompt" placeholder="Escribí tu mensaje..." aria-label="Escribir mensaje" />
+      <input id="prompt" class="input" name="prompt" placeholder="Ej.: ¿Cómo factorizar un trinomio?" aria-label="Escribir mensaje" />
       <button class="btn" type="submit">Enviar</button>
     </form>
+
     <div class="hint">
-      Consejo: podés usar <span class="kbd">Enter</span> para enviar y <span class="kbd">Shift + Enter</span> para saltos de línea.
+      Consejo: Enter = enviar · Shift + Enter = salto de línea.
     </div>
   </div>
 
   <script>
-    const DEMO_MODE = false;
-
+    // Este frontend usa SIEMPRE backend (Ollama), no hay DEMO local.
     const screenEl = document.getElementById('screen');
     const form = document.getElementById('chat-form');
     const input = document.getElementById('prompt');
-    const history = [
-      { role: "system", content: "Sos un asistente breve y claro. Respondé en español rioplatense."}
-    ];
+    const levelSel = document.getElementById('level');
+    const subjectSel = document.getElementById('subject');
 
-    // Mejor UX: Enter = enviar, Shift+Enter = nueva línea
+    // Historial de turnos (solo user/assistant). El prompt de sistema lo agrega el backend.
+    const history = [];
+
+    // Enter = enviar; Shift+Enter = nueva línea
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        form.requestSubmit();
-      }
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
     });
 
     form.addEventListener('submit', async (e) => {
@@ -107,11 +109,14 @@
       input.value = '';
       addLine(text, 'user');
       try {
-        const reply = DEMO_MODE ? await demoAnswer(text) : await sendToBackend(text);
+        const reply = await sendToBackend(text, {
+          level: levelSel.value,
+          subject: subjectSel.value
+        });
         await typeLine(reply, 'bot');
       } catch (err) {
         console.error(err);
-        addLine("⚠️ Ocurrió un error. Si estás en DEMO, funciona local. Para llamadas reales, levantá el backend en /api/chat.", 'bot error');
+        addLine("⚠️ No pude hablar con el backend. ¿Arrancaste `npm start` y Ollama está activo en 11434?", 'bot error');
       }
       screenEl.scrollTop = screenEl.scrollHeight;
     });
@@ -119,12 +124,12 @@
     function addLine(text, who) {
       const div = document.createElement('div');
       div.className = 'line ' + who;
-      div.textContent = text;
+      div.innerHTML = text.replace(/</g, '&lt;'); // evitar HTML
       screenEl.appendChild(div);
       screenEl.scrollTop = screenEl.scrollHeight;
     }
 
-    async function typeLine(text, who='bot', cps=30) {
+    async function typeLine(text, who='bot', cps=28) {
       const div = document.createElement('div');
       div.className = 'line ' + who;
       screenEl.appendChild(div);
@@ -137,36 +142,14 @@
       }
     }
 
-    async function demoAnswer(text) {
-      // Mini respuestas offline: no requiere API key.
-      const lower = text.toLowerCase();
-      if (lower.includes('hola') || lower.includes('buenas')) {
-        return "¡Holi! ¿En qué te ayudo?";
-      }
-      if (lower.includes('quién sos') || lower.includes('quien sos')) {
-        return "Soy un bot de demostración. Si querés respuestas de ChatGPT reales, activá el backend.";
-      }
-      if (lower.match(/sum(a|á)|\d+\s*\+\s*\d+/)) {
-        try {
-          const nums = lower.match(/-?\d+(?:\.\d+)?/g).map(Number);
-          const total = nums.reduce((a,b)=>a+b,0);
-          return `La suma me da ${total}.`;
-        } catch {}
-      }
-      return "Respuesta DEMO ✨ — montá el backend para usar el modelo de OpenAI.";
-    }
-
-    async function sendToBackend(text) {
+    async function sendToBackend(text, context) {
       history.push({ role:"user", content:text });
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history })
+        body: JSON.stringify({ message: text, history, context })
       });
-      if (!res.ok) {
-        const msg = await res.text();
-        throw new Error('Backend error: ' + msg);
-      }
+      if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
       history.push({ role:"assistant", content:data.reply });
       return data.reply;

@@ -1,62 +1,95 @@
-import express from "express";
-import cors from "cors";
-import OpenAI from "openai";
-import path from "path";
-import { fileURLToPath } from "url";
+// server.js — Backend solo Ollama (GRATIS, local)
+// Aethra Bot · asistente educativo (primaria, secundaria y universidad)
 import 'dotenv/config';
-
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import express from 'express';
+import cors from 'cors';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Config
+// Servir el frontend desde la misma carpeta
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+app.use('/', express.static(__dirname));
+
 const PORT = process.env.PORT || 8787;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
-const SYSTEM_PROMPT = process.env.SYSTEM_PROMPT || "Sos un asistente breve y claro. Respondé en español rioplatense.";
+const OLLAMA_URL = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
+// Por defecto uso "gemma3:4b" porque ya lo tenés instalado.
+// Podés cambiarlo por "llama3.2" o el que prefieras.
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma3:4b';
 
-// Sirve el frontend (opcional): coloca index.html junto a server.js
-app.use("/", express.static(__dirname));
+// Prompt base educativo para todos los niveles
+const SYSTEM_PROMPT =
+  process.env.SYSTEM_PROMPT ||
+  [
+    'Sos Aethra Bot, un asistente educativo para primaria, secundaria y universidad.',
+    'Explicá paso a paso, usando ejemplos simples y lenguaje claro.',
+    'Evitá “dar la respuesta” sin explicación: fomentá el razonamiento.',
+    'Si hay cálculos, mostrálos; si hay conceptos, definí brevemente y profundizá si te lo piden.',
+    'Respondé en español rioplatense.'
+  ].join(' ');
 
-app.post("/api/chat", async (req, res) => {
+// Salud: confirma conexión con Ollama y si está el modelo
+app.get('/health', async (_req, res) => {
   try {
-    if (!OPENAI_API_KEY) {
-      return res.status(500).send("Falta OPENAI_API_KEY en variables de entorno.");
-    }
-    const { message, history = [] } = req.body || {};
-    if (!message || typeof message !== "string") {
-      return res.status(400).send("message requerido (string).");
-    }
+    const r = await fetch(`${OLLAMA_URL}/api/tags`);
+    if (!r.ok) return res.status(502).json({ ok: false, error: `Ollama ${r.status}` });
+    const data = await r.json();
+    const models = (data?.models || []).map(m => m.name);
+    const hasModel = models.includes(OLLAMA_MODEL);
+    res.json({ ok: true, base_url: OLLAMA_URL, model: OLLAMA_MODEL, model_present: hasModel });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: e?.message });
+  }
+});
 
-    const client = new OpenAI({ apiKey: OPENAI_API_KEY });
+// Chat: message (string), history (array de {role, content}), context {level, subject}
+app.post('/api/chat', async (req, res) => {
+  try {
+    const { message, history = [], context = {} } = req.body || {};
+    if (!message || typeof message !== 'string') {
+      return res.status(400).send('message requerido (string).');
+    }
 
     const messages = [
-      { role: "system", content: SYSTEM_PROMPT },
+      { role: 'system', content: SYSTEM_PROMPT },
+      (context.level || context.subject)
+        ? {
+            role: 'system',
+            content:
+              `Nivel: ${context.level || 'general'}. ` +
+              `Materia: ${context.subject || 'general'}. ` +
+              `Adecuá el vocabulario, el detalle y los ejemplos a ese nivel.`
+          }
+        : null,
       ...history.filter(m => m && m.role && m.content),
-      { role: "user", content: message }
-    ];
+      { role: 'user', content: message }
+    ].filter(Boolean);
 
-    // Chat Completions estable para texto
-    const completion = await client.chat.completions.create({
-      model: OPENAI_MODEL,
-      temperature: 0.4,
-      messages
+    const r = await fetch(`${OLLAMA_URL}/api/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: OLLAMA_MODEL, messages, stream: false })
     });
 
-    const reply = completion.choices?.[0]?.message?.content?.trim() || "No tengo respuesta.";
+    if (!r.ok) {
+      const txt = await r.text();
+      return res.status(r.status).send(`Ollama error ${r.status}: ${txt}`);
+    }
+
+    const data = await r.json();
+    const reply = data?.message?.content?.trim() || 'Sin respuesta.';
     res.json({ reply });
   } catch (err) {
     console.error(err);
-    res.status(500).send(err?.message || "Error interno");
+    res.status(500).json({ error: err?.message || 'Error interno' });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Servidor listo en http://localhost:${PORT}`);
-  console.log("   GET  / -> sirve index.html (si existe en el mismo folder)");
-  console.log("   POST /api/chat -> endpoint para el frontend");
+  console.log(`✅ Aethra Bot listo en http://localhost:${PORT}`);
+  console.log(`   Ollama: ${OLLAMA_URL} · Modelo: ${OLLAMA_MODEL}`);
 });

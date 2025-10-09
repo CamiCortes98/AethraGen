@@ -10,6 +10,12 @@
   <link rel="preload" as="image" href="./assets/bg-light.jpg">
 
   <style>
+    .line.thinking{
+      font-size: 12.5px;
+      color: var(--muted);
+      opacity: .95;
+      margin: 6px 0 10px;
+    }
     /* =========================
        THEME TOKENS (Dark/Light)
        ========================= */
@@ -286,27 +292,59 @@
     const levelSel = document.getElementById('level');
     const subjectSel = document.getElementById('subject');
     const history = [];
+    let thinkingEl = null, thinkingTimer = null;
 
+    function showThinking(){
+      clearThinking();
+      thinkingEl = document.createElement('div');
+      thinkingEl.className = 'line thinking';
+      thinkingEl.textContent = 'Aethra Bot está pensando';
+      screenEl.appendChild(thinkingEl);
+
+      // animación simple de puntitos con JS
+      let i = 0;
+      thinkingTimer = setInterval(() => {
+        i = (i + 1) % 4;
+        thinkingEl.textContent = 'Aethra Bot está pensando' + '.'.repeat(i);
+        screenEl.scrollTop = screenEl.scrollHeight;
+      }, 350);
+    }
+
+    function clearThinking(){
+      if (thinkingTimer) { clearInterval(thinkingTimer); thinkingTimer = null; }
+      if (thinkingEl && thinkingEl.parentNode) thinkingEl.remove();
+      thinkingEl = null;
+    }
+  </script>
+  <script>
     // Enter = enviar; Shift+Enter = nueva línea
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); form.requestSubmit(); }
     });
 
-    form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const text = (input.value || '').trim();
       if (!text) return;
       input.value = '';
       addLine(text, 'user');
-      try {
-        const reply = await sendToBackend(text, { level: levelSel.value, subject: subjectSel.value });
+
+    try {
+        showThinking(); // ⟵ muestra "pensando..."
+        const reply = await sendToBackend(text, {
+          level: levelSel.value,
+          subject: subjectSel.value
+        });
+        clearThinking(); // ⟵ oculta al llegar la respuesta
         await typeLine(reply, 'bot');
-      } catch (err) {
+    } catch (err) {
         console.error(err);
+        clearThinking(); // ⟵ oculta también si falla
         addLine("⚠️ No pude hablar con el backend. ¿Arrancaste `npm start` y Ollama está activo en 11434?", 'bot error');
-      }
+    }
       screenEl.scrollTop = screenEl.scrollHeight;
-    });
+    
+  });
 
     function addLine(text, who) {
       const div = document.createElement('div');
@@ -329,17 +367,20 @@
     }
 
     async function sendToBackend(text, context) {
-      history.push({ role:"user", content:text });
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: text, history, context })
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const data = await res.json();
-      history.push({ role:"assistant", content:data.reply });
-      return data.reply;
-    }
+    history.push({ role:"user", content:text });
+    // 🔪 quedate con los últimos 12 mensajes (6 ida y vuelta)
+    if (history.length > 12) history.splice(0, history.length - 12);
+
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text, history, context })
+    });
+    if (!res.ok) throw new Error(await res.text());
+    const data = await res.json();
+    history.push({ role:"assistant", content:data.reply });
+    return data.reply;
+  }
   </script>
 </body>
 </html>

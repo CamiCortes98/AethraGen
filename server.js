@@ -25,7 +25,7 @@ const SYSTEM_PROMPT =
   [
     'Sos Aethra Bot, un asistente educativo para primaria, secundaria y universidad.',
     'Explicá paso a paso, usando ejemplos simples y lenguaje claro.',
-    'Evitá “dar la respuesta” sin explicación: fomentá el razonamiento y no repitas informacion en el chat.',
+    'Evitá “dar la respuesta” sin explicación: fomentá el razonamiento y no repitas informacion en el chat y completa la respuesta por completo.',
     'Si hay cálculos, mostrálos; si hay conceptos, definí brevemente y profundizá si te lo piden.',
     'Respondé en español argentino como si fueras docente, es muy importante que apliques psicopedagogía cuando explicas un tema sin ser muy extenso para que el entendimiento sea claro y conciso, solo respondes extensamente cuando te lo piden.'
   ].join(' ');
@@ -64,7 +64,7 @@ app.post('/api/chat', async (req, res) => {
       { role: 'user', content: message }
     ].filter(Boolean);
 
-    const NUM_THREADS = Math.max(2, Math.min(os.cpus().length, 8)); // usa hasta 8 hilos (CPU)
+    const NUM_THREADS = Math.max(2, Math.min(os.cpus().length, 12)); // usa hasta 8 hilos (CPU)
 
     const r = await fetch(`${OLLAMA_URL}/api/chat`, {
       method: 'POST',
@@ -72,12 +72,12 @@ app.post('/api/chat', async (req, res) => {
       body: JSON.stringify({
         model: OLLAMA_MODEL,
         messages,
-        stream: false,             // (ver §4 para streaming real)
-        keep_alive: "30m",         // ⚡ evita recarga fría por 30 min
+        stream: false,             
+        keep_alive: "30m",         
         options: {
           // ⚙️ parámetros que aceleran:
-          num_ctx: 1024,           // menos contexto = menos memoria/tiempo
-          num_predict: 220,        // límite de tokens de salida (ajustá a gusto)
+          num_ctx: 1600,           // menos contexto = menos memoria/tiempo
+          num_predict: 1500,        // límite de tokens de salida (ajustá a gusto)
           temperature: 0.4,
           top_k: 40,
           top_p: 0.9,

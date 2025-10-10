@@ -1,42 +1,61 @@
-# ChatBot web simple (con pantalla que simula caja de texto)
+# AethraGen — Chat educativo local (Ollama, gratis)
 
-Interfaz **minimal** lista para usar. Funciona en **modo DEMO** (sin API) y, si montás el backend, responde con **OpenAI (ChatGPT)**.
+**AethraGen** es un asistente estudiantil (primaria, secundaria y universidad) que corre **100% local** usando **Ollama**.  
+No requiere claves ni servicios pagos. Incluye:
 
-## 🚀 Cómo usar (DEMO, sin API)
-1. Abrí `index.html` en tu navegador (doble clic). 
-2. Escribí y probá — responde localmente con reglas simples.
+- 🌓 **Modo oscuro / claro** con botones ☀️/🌙
+- 🖼️ **Imagen de fondo fija** por tema (oscuro/claro)
+- ⏳ Indicador “**pensando…**” (texto pequeño y muted) mientras llega la respuesta
+- ⚡ Backend Node/Express conectado a **Ollama** vía `http://127.0.0.1:11434`
 
-> DEMO no requiere clave ni servidor, ideal para entregar una maqueta.
+> **Nota**: si en la UI ves “Aethra Bot”, podés renombrarlo a “AethraGen” cambiando el título y encabezado en `index.html`.
 
-## 🧠 Modo real con OpenAI
-1. Instalá dependencias y arrancá el servidor:
+---
 
-```bash
-cd /ruta/al/proyecto
-npm install
-OPENAI_API_KEY="tu_clave" npm start
-```
+## 🧰 Stack
+- **Frontend:** `index.html` (HTML/CSS/JS puros, sin build)
+- **Backend:** `Node 18+` + `Express` (`server.js`)
+- **Modelo local:** **Ollama** (p. ej., `gemma3:4b`, `llama3.2`, `llama3.2:1b`, `phi3:mini`, etc.)
 
-Opcional:
-```bash
-export OPENAI_MODEL="gpt-4o-mini"   # por defecto
-export SYSTEM_PROMPT="Sos un asistente..." # personalizá el tono
-```
+---
 
-2. Abrí en el navegador: **http://localhost:8787**  
-   (El servidor sirve `index.html` y expone `POST /api/chat`)
+## 🚀 Requisitos
+- **Node 18+**
+- **Ollama** instalado y accesible en `http://127.0.0.1:11434`
 
-3. En el frontend, si querés, editá `index.html` y cambiá:
-```js
-const DEMO_MODE = true; // -> false si usás backend
-```
+### Instalar Ollama (Windows)
+```powershell
+winget install --id Ollama.Ollama -e
+# reabrí PowerShell si fue la primera instalación
+ollama --version
 
-## 🧩 Estructura
-- `index.html` → UI completa (CSS + JS embebidos).  
-- `server.js` → Express + OpenAI (endpoint `/api/chat`).  
-- `package.json` → dependencias.
+# bajá al menos un modelo:
+ollama pull gemma3:4b
+# o (más liviano y rápido)
+ollama pull llama3.2:1b
+# o
+ollama pull llama3.2
 
-## ⚠️ Nota de seguridad
-No pongas tu `OPENAI_API_KEY` en el frontend (visible para cualquiera). Usá el backend (`server.js`).
 
-¡Listo!
+## Archivos y propósito
+
+- **index.html**  
+  Interfaz minimal con:
+  - selector de **modo oscuro/claro** (☀️/🌙) con preferencia guardada  
+  - **imagen de fondo fija** por tema  
+  - controles de **Nivel** y **Materia**  
+  - indicador **“Aethra Bot está pensando…”** (muted y fuente chica)  
+  - envío al backend: `POST /api/chat`
+
+- **server.js**  
+  Servidor **Node + Express** que:
+  - sirve los estáticos (`index.html` y `assets/`)  
+  - expone `GET /health` (chequeo de Ollama)  
+  - expone `POST /api/chat` (pasa mensajes a Ollama con opciones de rendimiento)  
+
+- **.env.example**  
+  Plantilla de configuración:
+  ```env
+  PORT=8787
+  OLLAMA_BASE_URL=http://127.0.0.1:11434
+  OLLAMA_MODEL=gemma3:4b   # o llama3.2, llama3.2:1b, phi3:mini, etc.

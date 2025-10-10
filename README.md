@@ -8,7 +8,7 @@ No requiere claves ni servicios pagos. Incluye:
 - ⏳ Indicador “**pensando…**” (texto pequeño y muted) mientras llega la respuesta
 - ⚡ Backend Node/Express conectado a **Ollama** vía `http://127.0.0.1:11434`
 
-> **Nota**: si en la UI ves “Aethra Bot”, podés renombrarlo a “AethraGen” cambiando el título y encabezado en `index.html`.
+
 
 ---
 
